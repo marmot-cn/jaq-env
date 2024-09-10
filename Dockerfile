@@ -4,24 +4,14 @@ FROM debian:bookworm
 # 设置非交互模式，防止某些软件包要求用户输入
 ENV DEBIAN_FRONTEND=noninteractive
 
-# 创建 /etc/apt/sources.list 文件并写入阿里云的源地址
-#RUN echo "deb http://mirrors.aliyun.com/debian/ bookworm main contrib non-free" > /etc/apt/sources.list \
-#    && echo "deb-src http://mirrors.aliyun.com/debian/ bookworm main contrib non-free" >> /etc/apt/sources.list \
-#    && echo "deb http://mirrors.aliyun.com/debian-security/ bookworm-security main contrib non-free" >> /etc/apt/sources.list \
-#    && echo "deb-src http://mirrors.aliyun.com/debian-security/ bookworm-security main contrib non-free" >> /etc/apt/sources.list \
-#    && echo "deb http://mirrors.aliyun.com/debian/ bookworm-updates main contrib non-free" >> /etc/apt/sources.list \
-#    && echo "deb-src http://mirrors.aliyun.com/debian/ bookworm-updates main contrib non-free" >> /etc/apt/sources.list \
-#    && echo "deb http://mirrors.aliyun.com/debian/ bookworm-backports main contrib non-free" >> /etc/apt/sources.list \
-#    && echo "deb-src http://mirrors.aliyun.com/debian/ bookworm-backports main contrib non-free" >> /etc/apt/sources.list
-
-
-# 更新包列表，安装依赖库，编译和安装 dlib 和 OpenCV，之后删除不必要的工具
+# 更新包列表，安装依赖库，包括 CA 证书
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     cmake \
     git \
     wget \
     curl \
+    ca-certificates \  # 安装 CA 证书
     libjpeg-dev \
     libpng-dev \
     libtiff-dev \
@@ -35,21 +25,24 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libatlas-base-dev \
     gfortran \
     libopencv-dev \
-    && apt-get clean && rm -rf /var/lib/apt/lists/* \
-    && git clone --depth=1 https://github.com/davisking/dlib.git /dlib \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# 安装 dlib
+RUN git clone --depth=1 https://github.com/davisking/dlib.git /dlib \
     && cd /dlib \
     && mkdir build \
     && cd build \
     && cmake .. \
     && cmake --build . --config Release \
     && make install \
-    && ldconfig \
-    && cd / && rm -rf /dlib \
-    && apt-get remove -y build-essential cmake git wget curl \
+    && ldconfig
+
+# 删除不需要的工具和文件以减小镜像大小
+RUN apt-get remove -y build-essential cmake git wget curl \
     && apt-get autoremove -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
+    
 # 创建 /models 目录
 RUN mkdir -p /models
 
