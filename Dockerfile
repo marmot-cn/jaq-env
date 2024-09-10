@@ -4,7 +4,7 @@ FROM debian:bookworm
 # 设置非交互模式，防止某些软件包要求用户输入
 ENV DEBIAN_FRONTEND=noninteractive
 
-# 将所有安装和清理命令合并到一个 RUN 中，以减少层的数量
+# 更新包列表，安装依赖库，包括 CA 证书
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     cmake \
@@ -25,14 +25,23 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libatlas-base-dev \
     gfortran \
     libopencv-dev \
-    && git clone --depth=1 https://github.com/davisking/dlib.git /dlib \
-    && cd /dlib && mkdir build && cd build \
-    && cmake .. && cmake --build . --config Release \
-    && make install && ldconfig \
-    && apt-get remove -y build-essential cmake git wget curl \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# 安装 dlib
+RUN git clone --depth=1 https://github.com/davisking/dlib.git /dlib \
+    && cd /dlib \
+    && mkdir build \
+    && cd build \
+    && cmake .. \
+    && cmake --build . --config Release \
+    && make install \
+    && ldconfig
+
+# 删除不需要的工具和文件以减小镜像大小
+RUN apt-get remove -y build-essential cmake git wget curl ca-certificates \
     && apt-get autoremove -y \
     && apt-get clean \
-    && rm -rf /dlib /var/lib/apt/lists/* /tmp/* /var/tmp/*
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # 创建 /models 目录
 RUN mkdir -p /models
