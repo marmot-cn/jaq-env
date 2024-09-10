@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     wget \
     curl \
-    ca-certificates \  # 安装 CA 证书
+    ca-certificates \
     libjpeg-dev \
     libpng-dev \
     libtiff-dev \
@@ -38,7 +38,7 @@ RUN git clone --depth=1 https://github.com/davisking/dlib.git /dlib \
     && ldconfig
 
 # 删除不需要的工具和文件以减小镜像大小
-RUN apt-get remove -y build-essential cmake git wget curl ca-certificates \
+RUN apt-get remove -y build-essential cmake git wget curl \
     && apt-get autoremove -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
