@@ -38,11 +38,11 @@ RUN git clone --depth=1 https://github.com/davisking/dlib.git /dlib \
     && ldconfig
 
 # 删除不需要的工具和文件以减小镜像大小
-RUN apt-get remove -y build-essential cmake git wget curl \
+RUN apt-get remove -y build-essential cmake git wget curl ca-certificates \
     && apt-get autoremove -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-    
+
 # 创建 /models 目录
 RUN mkdir -p /models
 
