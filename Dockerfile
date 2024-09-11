@@ -5,7 +5,8 @@ FROM debian:bookworm-slim AS build
 ENV DEBIAN_FRONTEND=noninteractive
 
 # 使用清华大学镜像源
-RUN echo "deb https://mirrors.tuna.tsinghua.edu.cn/debian/ bookworm main contrib non-free" > /etc/apt/sources.list && \
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates && \
+    echo "deb https://mirrors.tuna.tsinghua.edu.cn/debian/ bookworm main contrib non-free" > /etc/apt/sources.list && \
     echo "deb-src https://mirrors.tuna.tsinghua.edu.cn/debian/ bookworm main contrib non-free" >> /etc/apt/sources.list && \
     echo "deb https://mirrors.tuna.tsinghua.edu.cn/debian-security bookworm-security main contrib non-free" >> /etc/apt/sources.list && \
     echo "deb-src https://mirrors.tuna.tsinghua.edu.cn/debian-security bookworm-security main contrib non-free" >> /etc/apt/sources.list && \
@@ -22,7 +23,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     wget \
     curl \
-    ca-certificates \
     unzip \
     libjpeg-dev \
     libpng-dev \
@@ -75,9 +75,9 @@ RUN apt-get remove -y build-essential cmake git wget curl \
 RUN mkdir -p /models
 
 # 将本地的模型文件复制到镜像中（如有需要）
-# COPY models/dlib_face_recognition_resnet_model_v1.dat /models/
-# COPY models/mmod_human_face_detector.dat /models/
-# COPY models/shape_predictor_5_face_landmarks.dat /models/
+COPY models/dlib_face_recognition_resnet_model_v1.dat /models/
+COPY models/mmod_human_face_detector.dat /models/
+COPY models/shape_predictor_5_face_landmarks.dat /models/
 
 # 默认命令
 CMD ["bash"]
